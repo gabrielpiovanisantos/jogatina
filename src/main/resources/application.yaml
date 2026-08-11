@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: jogatina
+  datasource:
+    url: jdbc:postgresql://localhost:5432/root_jogatina
+    username: root_admin
+    password: root_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+    hibernate:
+      ddl-auto: update
