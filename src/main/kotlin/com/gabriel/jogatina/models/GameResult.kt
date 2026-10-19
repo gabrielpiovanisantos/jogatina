@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "games")
+@Table(name = "game_results")
 class GameResult(
 
     @Id

@@ -4,7 +4,7 @@ import jakarta.persistence.*
 import java.time.Instant
 
 @Entity
-@Table(name = "gameResults")
+@Table(name = "games")
 class Game(
 
     @Id
