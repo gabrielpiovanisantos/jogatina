@@ -37,7 +37,7 @@ class RankingServiceTest {
     }
 
     @Test
-    fun testGetRankingOrdersByVictoriesThenScore() {
+    fun `given played games when getting the ranking then orders by victories then score`() {
         val alice = Player(id = 1, name = "Alice")
         val bob = Player(id = 2, name = "Bob")
 
@@ -69,7 +69,7 @@ class RankingServiceTest {
     }
 
     @Test
-    fun testGetRankingHandlesPlayerWithNoGames() {
+    fun `given a player with no games when getting the ranking then returns zeroed statistics`() {
         val carol = Player(id = 3, name = "Carol")
 
         `when`(playerRepository.findAll()).thenReturn(listOf(carol))
@@ -86,7 +86,7 @@ class RankingServiceTest {
     }
 
     @Test
-    fun testGetPlayerRankingReturnsRankingForExistingPlayer() {
+    fun `given an existing player when getting a player ranking then returns that player statistics`() {
         val alice = Player(id = 1, name = "Alice")
 
         `when`(playerRepository.findById(1L)).thenReturn(Optional.of(alice))
@@ -102,7 +102,7 @@ class RankingServiceTest {
     }
 
     @Test
-    fun testGetPlayerRankingReturnsNullForUnknownPlayer() {
+    fun `given an unknown player when getting a player ranking then returns null`() {
         `when`(playerRepository.findById(99L)).thenReturn(Optional.empty())
 
         val ranking = rankingService.getPlayerRanking(99L)

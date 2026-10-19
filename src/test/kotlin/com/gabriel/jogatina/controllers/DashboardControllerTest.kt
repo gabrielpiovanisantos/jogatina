@@ -16,7 +16,7 @@ class DashboardControllerTest {
     lateinit var rankingService: RankingService
 
     @Test
-    fun testGetRankingReturnsServiceResult() {
+    fun `given a service ranking when getting the ranking then returns it`() {
         val controller = DashboardController(rankingService)
         val ranking = listOf(
             PlayerRankingDTO(
@@ -37,7 +37,7 @@ class DashboardControllerTest {
     }
 
     @Test
-    fun testGetPlayerRankingReturnsServiceResult() {
+    fun `given a service player ranking when getting a player ranking then returns it`() {
         val controller = DashboardController(rankingService)
         val playerRanking = PlayerRankingDTO(
             playerId = 1,
@@ -56,7 +56,7 @@ class DashboardControllerTest {
     }
 
     @Test
-    fun testGetPlayerRankingReturnsNullForUnknownPlayer() {
+    fun `given an unknown player when getting a player ranking then returns null`() {
         val controller = DashboardController(rankingService)
         `when`(rankingService.getPlayerRanking(99L)).thenReturn(null)
 

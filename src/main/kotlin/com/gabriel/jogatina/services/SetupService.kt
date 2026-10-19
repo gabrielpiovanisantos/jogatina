@@ -1,18 +1,29 @@
 package com.gabriel.jogatina.services
 
 import com.gabriel.jogatina.controllers.SetupPlayerDTO
+import com.gabriel.jogatina.models.Player
+import com.gabriel.jogatina.repositories.PlayerRepository
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
-class SetupService {
+class SetupService(private val playerRepository: PlayerRepository) {
 
-    fun organize(players: List<SetupPlayerDTO>): List<List<SetupPlayerDTO>> {
-        val n = players.size
+    @Transactional
+    fun organize(requested: List<SetupPlayerDTO>): List<List<SetupPlayerDTO>> {
+        val n = requested.size
         require(n >= 3) { "É necessário pelo menos 3 jogadores para organizar mesas" }
-        require(players.all { it.name.isNotBlank() }) { "Nome de jogador não pode ser vazio" }
+        require(requested.all { it.name.isNotBlank() }) { "Nome de jogador não pode ser vazio" }
 
-        val nonNullIds = players.mapNotNull { it.id }
-        require(nonNullIds.size == nonNullIds.distinct().size) { "IDs de jogadores duplicados" }
+        val names = requested.map { it.name.trim() }
+        require(names.size == names.distinctBy { it.lowercase() }.size) { "Jogador repetido na lista" }
+
+        // Players are identified by name: the ids sent by the frontend are temporary,
+        // so each name is looked up and registered on first use to get its real id.
+        val players = names.map { name ->
+            val player = playerRepository.findByNameIgnoreCase(name) ?: playerRepository.save(Player(name = name))
+            SetupPlayerDTO(id = player.id, name = player.name)
+        }
 
         // First compute the sizes of each group according to the strategy
         val sizes = mutableListOf<Int>()

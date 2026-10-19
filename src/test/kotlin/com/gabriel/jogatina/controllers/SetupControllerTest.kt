@@ -2,12 +2,22 @@ package com.gabriel.jogatina.controllers
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
+import org.mockito.Mockito.mock
 import org.springframework.http.HttpStatus
+import com.gabriel.jogatina.models.Player
+import com.gabriel.jogatina.repositories.PlayerRepository
 import com.gabriel.jogatina.services.SetupService
 
 class SetupControllerTest {
 
-    private val controller = SetupController(SetupService())
+    // In-memory stand-in for the database: save() assigns ids, every other call
+    // (findByNameIgnoreCase included) returns null, so every player is new.
+    private var nextId = 1000L
+    private val playerRepository: PlayerRepository = mock(PlayerRepository::class.java) { invocation ->
+        if (invocation.method.name == "save") invocation.getArgument<Player>(0).apply { id = nextId++ } else null
+    }
+
+    private val controller = SetupController(SetupService(playerRepository))
 
     private fun createPlayers(count: Int): List<SetupPlayerDTO> {
         return (1..count).map { i ->
@@ -31,7 +41,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testLessThan3PlayersReturnsError() {
+    fun `given fewer than 3 players when organizing then responds 400`() {
         val request1 = SetupRequest(players = createPlayers(1))
         val response1 = controller.organize(request1)
         assertEquals(HttpStatus.BAD_REQUEST, response1.statusCode)
@@ -42,7 +52,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly3Players() {
+    fun `given 3 players when organizing then returns one table of 3`() {
         val request = SetupRequest(players = createPlayers(3))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -54,7 +64,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly4Players() {
+    fun `given 4 players when organizing then returns one table of 4`() {
         val request = SetupRequest(players = createPlayers(4))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -66,7 +76,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly5Players() {
+    fun `given 5 players when organizing then returns one table of 5`() {
         val request = SetupRequest(players = createPlayers(5))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -78,7 +88,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly6Players() {
+    fun `given 6 players when organizing then returns two tables of 3`() {
         val request = SetupRequest(players = createPlayers(6))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -91,7 +101,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly7Players() {
+    fun `given 7 players when organizing then returns tables of 4 and 3`() {
         val request = SetupRequest(players = createPlayers(7))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -104,7 +114,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly8Players() {
+    fun `given 8 players when organizing then returns two tables of 4`() {
         val request = SetupRequest(players = createPlayers(8))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -117,7 +127,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly9Players() {
+    fun `given 9 players when organizing then returns tables of 5 and 4`() {
         val request = SetupRequest(players = createPlayers(9))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -130,7 +140,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly10Players() {
+    fun `given 10 players when organizing then returns two tables of 5`() {
         val request = SetupRequest(players = createPlayers(10))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -143,7 +153,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly11Players() {
+    fun `given 11 players when organizing then returns tables of 4, 4 and 3`() {
         val request = SetupRequest(players = createPlayers(11))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -157,7 +167,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly12Players() {
+    fun `given 12 players when organizing then returns three tables of 4`() {
         val request = SetupRequest(players = createPlayers(12))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -171,7 +181,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly13Players() {
+    fun `given 13 players when organizing then returns tables of 5, 4 and 4`() {
         val request = SetupRequest(players = createPlayers(13))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -185,7 +195,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly14Players() {
+    fun `given 14 players when organizing then returns tables of 5, 5 and 4`() {
         val request = SetupRequest(players = createPlayers(14))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -199,7 +209,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly15Players() {
+    fun `given 15 players when organizing then returns tables of 4, 4, 4 and 3`() {
         val request = SetupRequest(players = createPlayers(15))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -214,7 +224,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly20Players() {
+    fun `given 20 players when organizing then returns five tables of 4`() {
         val request = SetupRequest(players = createPlayers(20))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -228,7 +238,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testExactly23Players() {
+    fun `given 23 players when organizing then returns six tables`() {
         val request = SetupRequest(players = createPlayers(23))
         val response = controller.organize(request)
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -242,7 +252,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testPlayerOrderPreserved() {
+    fun `given 8 players when organizing then keeps the original order`() {
         val players = createPlayers(8)
         val request = SetupRequest(players = players)
         val response = controller.organize(request)
@@ -257,7 +267,7 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testBlankPlayerNameReturnsError() {
+    fun `given a blank name when organizing then responds 400`() {
         val players = createPlayers(3).toMutableList()
         players[1] = players[1].copy(name = "   ")
         val request = SetupRequest(players = players)
@@ -267,17 +277,48 @@ class SetupControllerTest {
     }
 
     @Test
-    fun testDuplicatePlayerIdsReturnsError() {
+    fun `given a repeated name in another case when organizing then responds 400`() {
         val players = createPlayers(3).toMutableList()
-        players[1] = players[1].copy(id = players[0].id)
+        players[1] = players[1].copy(name = " ${players[0].name.uppercase()} ")
         val request = SetupRequest(players = players)
 
         val response = controller.organize(request)
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
+        assertEquals("Jogador repetido na lista", response.body)
     }
 
     @Test
-    fun testPreferenceFor4sOver5sAnd3s() {
+    fun `given new names when organizing then registers them and returns the database ids`() {
+        val response = controller.organize(SetupRequest(players = createPlayers(3)))
+
+        val result = (response.body as? SetupResponse) ?: error("Response body is null")
+        assertEquals(listOf(1000L, 1001L, 1002L), result.groups.flatten().map { it.id })
+    }
+
+    @Test
+    fun `given a registered player when organizing with the name in another case then reuses the player`() {
+        val ana = Player(id = 7, name = "Ana")
+        val repository: PlayerRepository = mock(PlayerRepository::class.java) { invocation ->
+            when (invocation.method.name) {
+                "findByNameIgnoreCase" -> if (invocation.getArgument<String>(0).equals("ana", ignoreCase = true)) ana else null
+                "save" -> invocation.getArgument<Player>(0).apply { id = nextId++ }
+                else -> null
+            }
+        }
+        val players = listOf(
+            SetupPlayerDTO(id = 1, name = "  ana "),
+            SetupPlayerDTO(id = 2, name = "Bruno"),
+            SetupPlayerDTO(id = 3, name = "Carla")
+        )
+
+        val response = SetupController(SetupService(repository)).organize(SetupRequest(players = players))
+
+        val result = (response.body as? SetupResponse) ?: error("Response body is null")
+        assertEquals(SetupPlayerDTO(id = 7, name = "Ana"), result.groups.flatten().first())
+    }
+
+    @Test
+    fun `given 9 or 11 players when organizing then prefers tables of 4 over tables of 5 and 3`() {
         // n=9 should give [5,4] not [3,3,3] (fewer groups, prioritize 4s)
         val request9 = SetupRequest(players = createPlayers(9))
         val response9 = controller.organize(request9)
