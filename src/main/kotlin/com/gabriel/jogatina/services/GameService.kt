@@ -15,6 +15,13 @@ class GameService(
     private val playerRepository: PlayerRepository
 ) {
 
+    /** Partidas com data em [from, to), da mais antiga para a mais recente. */
+    @Transactional(readOnly = true)
+    fun listBetween(from: Instant, to: Instant): List<Game> {
+        require(from.isBefore(to)) { "'from' precisa ser anterior a 'to'" }
+        return gameRepository.findByDateGreaterThanEqualAndDateLessThanOrderByDateAsc(from, to)
+    }
+
     @Transactional
     fun finish(dateTime: Instant, results: List<FinishGameResultDTO>): Game {
         require(results.isNotEmpty()) { "A partida precisa ter pelo menos um resultado" }
