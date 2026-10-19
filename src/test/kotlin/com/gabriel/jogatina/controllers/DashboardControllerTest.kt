@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
+import org.springframework.http.HttpStatus
 
 @ExtendWith(MockitoExtension::class)
 class DashboardControllerTest {
@@ -52,16 +53,18 @@ class DashboardControllerTest {
 
         val result = controller.getPlayerRanking(1L)
 
-        assertEquals(playerRanking, result)
+        assertEquals(HttpStatus.OK, result.statusCode)
+        assertEquals(playerRanking, result.body)
     }
 
     @Test
-    fun `given an unknown player when getting a player ranking then returns null`() {
+    fun `given an unknown player when getting a player ranking then responds 404`() {
         val controller = DashboardController(rankingService)
         `when`(rankingService.getPlayerRanking(99L)).thenReturn(null)
 
         val result = controller.getPlayerRanking(99L)
 
-        assertNull(result)
+        assertEquals(HttpStatus.NOT_FOUND, result.statusCode)
+        assertNull(result.body)
     }
 }

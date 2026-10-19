@@ -353,11 +353,10 @@ class FrontendContractIntegrationTest {
         }
 
         @Test
-        fun `given an unknown player when getting a player ranking then responds 200 with an empty body`() {
-            // Comportamento atual (o controller retorna null). O frontend trata
-            // isso como erro de parse do JSON; se virar 404, ajuste os dois lados.
+        fun `given an unknown player when getting a player ranking then responds 404 with an empty body`() {
+            // O frontend rejeita qualquer status fora de 2xx, então trata o 404 como erro.
             client.get().uri("/dashboard/ranking/999").exchange()
-                .expectStatus().isOk
+                .expectStatus().isNotFound
                 .expectBody().isEmpty
         }
     }
