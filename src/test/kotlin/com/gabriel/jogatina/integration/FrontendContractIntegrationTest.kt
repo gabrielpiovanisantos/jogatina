@@ -259,6 +259,29 @@ class FrontendContractIntegrationTest {
                 .expectStatus().isBadRequest
                 .expectBody(String::class.java).isEqualTo("Pontuação não pode ser negativa")
         }
+
+        @Test
+        fun `given an empty faction when finishing a game then responds 400 without saving anything`() {
+            val ana = playerRepository.save(Player(name = "Ana")).id!!
+
+            finalizar("""{"dateTime":"2026-10-01T20:00:00Z","results":[${resultado(ana, "", 30, true)}]}""")
+                .expectStatus().isBadRequest
+                .expectBody(String::class.java).isEqualTo("Facção não pode ser vazia")
+
+            assert(jdbcTemplate.queryForObject("select count(*) from games", Int::class.java) == 0)
+        }
+
+        @Test
+        fun `given a faction with only spaces when finishing a game then responds 400 without saving anything`() {
+            // O campo de facção do frontend é required, mas aceita só espaços.
+            val ana = playerRepository.save(Player(name = "Ana")).id!!
+
+            finalizar("""{"dateTime":"2026-10-01T20:00:00Z","results":[${resultado(ana, "   ", 30, true)}]}""")
+                .expectStatus().isBadRequest
+                .expectBody(String::class.java).isEqualTo("Facção não pode ser vazia")
+
+            assert(jdbcTemplate.queryForObject("select count(*) from games", Int::class.java) == 0)
+        }
     }
 
     @Nested
