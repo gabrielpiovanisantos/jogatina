@@ -2,9 +2,9 @@ spring:
   application:
     name: jogatina
   datasource:
-    url: jdbc:postgresql://localhost:5432/root_jogatina
-    username: root_admin
-    password: root_password
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/root_jogatina}
+    username: ${SPRING_DATASOURCE_USERNAME:root_admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:root_password}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -14,4 +14,16 @@ spring:
         format_sql: true
 
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
+
+  flyway:
+    baseline-on-migrate: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
