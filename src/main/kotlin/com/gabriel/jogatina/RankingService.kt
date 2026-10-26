@@ -7,6 +7,7 @@ import com.gabriel.jogatina.models.GameResult
 import com.gabriel.jogatina.models.Player
 import com.gabriel.jogatina.repositories.PlayerRepository
 import com.gabriel.jogatina.repositories.ResultRepository
+import com.gabriel.jogatina.services.Period
 import com.gabriel.jogatina.services.groupByFaction
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,11 +25,13 @@ class RankingService(
      * 3. Porcentagem de vitórias
      * 4. Quantidade de facções diferentes que jogou
      *
-     * Ordenado por número de vitórias (decrescente)
+     * Ordenado por número de vitórias (decrescente). Só contam as partidas do
+     * período; quem não jogou nele aparece zerado.
      */
-    fun getRanking(): List<PlayerRankingDTO> {
+    @Transactional(readOnly = true)
+    fun getRanking(period: Period = Period()): List<PlayerRankingDTO> {
         val allPlayers = playerRepository.findAll().toList()
-        val allResults = resultRepository.findAll().toList()
+        val allResults = resultRepository.findInPeriod(period.from, period.to)
 
         return allPlayers.map { player ->
             val playerResults = allResults.filter { it.player?.id == player.id }
@@ -43,12 +46,13 @@ class RankingService(
 
     /**
      * Obtém o ranking de um jogador específico, com o desempenho em cada facção,
-     * na mesma ordem dos dashboards de facção.
+     * na mesma ordem dos dashboards de facção. Só contam as partidas do período;
+     * sem partidas nele, volta zerado (null só para jogador inexistente).
      */
     @Transactional(readOnly = true)
-    fun getPlayerRanking(playerId: Long): PlayerRankingDetailDTO? {
+    fun getPlayerRanking(playerId: Long, period: Period = Period()): PlayerRankingDetailDTO? {
         val player = playerRepository.findById(playerId).orElse(null) ?: return null
-        val allResults = resultRepository.findAll().toList()
+        val allResults = resultRepository.findInPeriod(period.from, period.to)
         val playerResults = allResults.filter { it.player?.id == playerId }
 
         val ranking = buildPlayerRanking(player, playerResults)

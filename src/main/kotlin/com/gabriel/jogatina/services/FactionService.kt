@@ -18,11 +18,11 @@ class FactionService(
      * partidas e nome.
      *
      * Facções que diferem só em maiúsculas ou espaços contam como a mesma
-     * (ver [groupByFaction]).
+     * (ver [groupByFaction]). Só contam as partidas do período.
      */
     @Transactional(readOnly = true)
-    fun getFactions(): List<FactionStatsDTO> {
-        return groupByFaction(resultRepository.findAll())
+    fun getFactions(period: Period = Period()): List<FactionStatsDTO> {
+        return groupByFaction(resultRepository.findInPeriod(period.from, period.to))
             .map { (name, results) -> buildStats(name, results) }
             .sortedWith(
                 compareByDescending<FactionStatsDTO> { it.winPercentage }
@@ -32,11 +32,11 @@ class FactionService(
             )
     }
 
-    /** Detalhe de uma facção (ignora maiúsculas e minúsculas), ou null se ninguém jogou com ela. */
+    /** Detalhe de uma facção (ignora maiúsculas e minúsculas), ou null se ninguém jogou com ela no período. */
     @Transactional(readOnly = true)
-    fun getFaction(faction: String): FactionDetailDTO? {
+    fun getFaction(faction: String, period: Period = Period()): FactionDetailDTO? {
         val key = normalizeFaction(faction)
-        val results = resultRepository.findAll().filter { normalizeFaction(it.faction) == key }
+        val results = resultRepository.findInPeriod(period.from, period.to).filter { normalizeFaction(it.faction) == key }
         if (results.isEmpty()) return null
 
         val stats = buildStats(factionDisplayName(results), results)

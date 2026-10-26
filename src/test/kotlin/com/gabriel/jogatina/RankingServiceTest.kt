@@ -42,7 +42,7 @@ class RankingServiceTest {
         val bob = Player(id = 2, name = "Bob")
 
         `when`(playerRepository.findAll()).thenReturn(listOf(alice, bob))
-        `when`(resultRepository.findAll()).thenReturn(
+        `when`(resultRepository.findInPeriod(null, null)).thenReturn(
             listOf(
                 result(alice, score = 10, faction = "A", won = true),
                 result(alice, score = 20, faction = "B", won = true),
@@ -73,7 +73,7 @@ class RankingServiceTest {
         val carol = Player(id = 3, name = "Carol")
 
         `when`(playerRepository.findAll()).thenReturn(listOf(carol))
-        `when`(resultRepository.findAll()).thenReturn(emptyList())
+        `when`(resultRepository.findInPeriod(null, null)).thenReturn(emptyList())
 
         val ranking = rankingService.getRanking()
 
@@ -90,7 +90,7 @@ class RankingServiceTest {
         val alice = Player(id = 1, name = "Alice")
 
         `when`(playerRepository.findById(1L)).thenReturn(Optional.of(alice))
-        `when`(resultRepository.findAll()).thenReturn(
+        `when`(resultRepository.findInPeriod(null, null)).thenReturn(
             listOf(result(alice, score = 10, faction = "A", won = true))
         )
 
@@ -106,7 +106,7 @@ class RankingServiceTest {
         val alice = Player(id = 1, name = "Alice")
 
         `when`(playerRepository.findAll()).thenReturn(listOf(alice))
-        `when`(resultRepository.findAll()).thenReturn(
+        `when`(resultRepository.findInPeriod(null, null)).thenReturn(
             listOf(
                 result(alice, score = 10, faction = "Marqueses", won = true),
                 result(alice, score = 10, faction = " marqueses ", won = false),
