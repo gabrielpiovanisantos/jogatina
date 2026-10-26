@@ -1,7 +1,9 @@
 package com.gabriel.jogatina.controllers
 
 import com.gabriel.jogatina.RankingService
+import com.gabriel.jogatina.dtos.PlayerFactionStatsDTO
 import com.gabriel.jogatina.dtos.PlayerRankingDTO
+import com.gabriel.jogatina.dtos.PlayerRankingDetailDTO
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -40,14 +42,24 @@ class DashboardControllerTest {
     @Test
     fun `given a service player ranking when getting a player ranking then returns it`() {
         val controller = DashboardController(rankingService)
-        val playerRanking = PlayerRankingDTO(
+        val playerRanking = PlayerRankingDetailDTO(
             playerId = 1,
             playerName = "Alice",
             totalVictories = 2,
             totalGames = 2,
             winPercentage = 100.0,
-            differentFactions = 2,
-            totalScore = 30
+            differentFactions = 1,
+            totalScore = 30,
+            factions = listOf(
+                PlayerFactionStatsDTO(
+                    faction = "Marqueses",
+                    totalGames = 2,
+                    totalVictories = 2,
+                    winPercentage = 100.0,
+                    totalScore = 30,
+                    averageScore = 15.0
+                )
+            )
         )
         `when`(rankingService.getPlayerRanking(1L)).thenReturn(playerRanking)
 

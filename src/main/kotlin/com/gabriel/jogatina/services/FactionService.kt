@@ -17,8 +17,8 @@ class FactionService(
      * Estatísticas por facção, ordenadas por porcentagem de vitórias, vitórias,
      * partidas e nome.
      *
-     * A facção é gravada como o usuário digitou, então "Stark", "stark" e
-     * " Stark " contam como a mesma. O nome exibido é a grafia mais usada.
+     * Facções que diferem só em maiúsculas ou espaços contam como a mesma
+     * (ver [groupByFaction]).
      */
     @Transactional(readOnly = true)
     fun getFactions(): List<FactionStatsDTO> {
@@ -35,11 +35,11 @@ class FactionService(
     /** Detalhe de uma facção (ignora maiúsculas e minúsculas), ou null se ninguém jogou com ela. */
     @Transactional(readOnly = true)
     fun getFaction(faction: String): FactionDetailDTO? {
-        val key = normalize(faction)
-        val results = resultRepository.findAll().filter { normalize(it.faction) == key }
+        val key = normalizeFaction(faction)
+        val results = resultRepository.findAll().filter { normalizeFaction(it.faction) == key }
         if (results.isEmpty()) return null
 
-        val stats = buildStats(displayName(results), results)
+        val stats = buildStats(factionDisplayName(results), results)
         val players = results.groupBy { it.player!!.id }
             .map { (_, playerResults) ->
                 val player = playerResults.first().player!!
@@ -74,12 +74,6 @@ class FactionService(
         )
     }
 
-    private fun groupByFaction(results: List<GameResult>): Map<String, List<GameResult>> =
-        results.filter { it.faction.isNotBlank() }
-            .groupBy { normalize(it.faction) }
-            .values
-            .associateBy { displayName(it) }
-
     private fun buildStats(name: String, results: List<GameResult>): FactionStatsDTO {
         val victories = results.count { it.won }
         val score = results.sumOf { it.score }
@@ -93,18 +87,6 @@ class FactionService(
             distinctPlayers = results.mapNotNull { it.player?.id }.distinct().size
         )
     }
-
-    /** Grafia mais usada; no empate, a primeira em ordem alfabética. */
-    private fun displayName(results: List<GameResult>): String =
-        results.map { it.faction.trim() }
-            .groupingBy { it }
-            .eachCount()
-            .entries
-            .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key })
-            .first()
-            .key
-
-    private fun normalize(faction: String) = faction.trim().lowercase()
 
     private fun percentage(victories: Int, games: Int) = (victories.toDouble() / games) * 100
 }

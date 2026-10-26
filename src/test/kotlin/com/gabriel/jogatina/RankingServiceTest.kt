@@ -102,6 +102,24 @@ class RankingServiceTest {
     }
 
     @Test
+    fun `given one faction written in different cases when getting the ranking then counts it once`() {
+        val alice = Player(id = 1, name = "Alice")
+
+        `when`(playerRepository.findAll()).thenReturn(listOf(alice))
+        `when`(resultRepository.findAll()).thenReturn(
+            listOf(
+                result(alice, score = 10, faction = "Marqueses", won = true),
+                result(alice, score = 10, faction = " marqueses ", won = false),
+                result(alice, score = 10, faction = "Malandro", won = false)
+            )
+        )
+
+        val ranking = rankingService.getRanking()
+
+        assertEquals(2, ranking[0].differentFactions)
+    }
+
+    @Test
     fun `given an unknown player when getting a player ranking then returns null`() {
         `when`(playerRepository.findById(99L)).thenReturn(Optional.empty())
 

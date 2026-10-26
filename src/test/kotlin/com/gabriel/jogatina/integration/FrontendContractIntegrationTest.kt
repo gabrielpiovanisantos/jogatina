@@ -350,6 +350,12 @@ class FrontendContractIntegrationTest {
                 .jsonPath("$.winPercentage").isEqualTo(50.0)
                 .jsonPath("$.differentFactions").isEqualTo(2)
                 .jsonPath("$.totalScore").isEqualTo(52)
+                .jsonPath("$.factions[*].faction").isEqualTo(listOf("Malandro", "Dinastia das Rapinas"))
+                .jsonPath("$.factions[0].totalVictories").isEqualTo(1)
+                .jsonPath("$.factions[0].winPercentage").isEqualTo(100.0)
+                .jsonPath("$.factions[1].totalGames").isEqualTo(1)
+                .jsonPath("$.factions[1].totalVictories").isEqualTo(0)
+                .jsonPath("$.factions[1].averageScore").isEqualTo(22.0)
         }
 
         @Test

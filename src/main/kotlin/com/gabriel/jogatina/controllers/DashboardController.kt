@@ -2,6 +2,7 @@ package com.gabriel.jogatina.controllers
 
 import com.gabriel.jogatina.RankingService
 import com.gabriel.jogatina.dtos.PlayerRankingDTO
+import com.gabriel.jogatina.dtos.PlayerRankingDetailDTO
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -19,7 +20,7 @@ class DashboardController(
     }
 
     @GetMapping("/ranking/{playerId}")
-    fun getPlayerRanking(@PathVariable playerId: Long): ResponseEntity<PlayerRankingDTO> {
+    fun getPlayerRanking(@PathVariable playerId: Long): ResponseEntity<PlayerRankingDetailDTO> {
         val ranking = rankingService.getPlayerRanking(playerId) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(ranking)
     }

@@ -1,11 +1,15 @@
 package com.gabriel.jogatina
 
+import com.gabriel.jogatina.dtos.PlayerFactionStatsDTO
 import com.gabriel.jogatina.dtos.PlayerRankingDTO
+import com.gabriel.jogatina.dtos.PlayerRankingDetailDTO
 import com.gabriel.jogatina.models.GameResult
 import com.gabriel.jogatina.models.Player
 import com.gabriel.jogatina.repositories.PlayerRepository
 import com.gabriel.jogatina.repositories.ResultRepository
+import com.gabriel.jogatina.services.groupByFaction
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class RankingService(
@@ -38,14 +42,46 @@ class RankingService(
     }
 
     /**
-     * Obtém o ranking de um jogador específico
+     * Obtém o ranking de um jogador específico, com o desempenho em cada facção,
+     * na mesma ordem dos dashboards de facção.
      */
-    fun getPlayerRanking(playerId: Long): PlayerRankingDTO? {
+    @Transactional(readOnly = true)
+    fun getPlayerRanking(playerId: Long): PlayerRankingDetailDTO? {
         val player = playerRepository.findById(playerId).orElse(null) ?: return null
         val allResults = resultRepository.findAll().toList()
         val playerResults = allResults.filter { it.player?.id == playerId }
 
-        return buildPlayerRanking(player, playerResults)
+        val ranking = buildPlayerRanking(player, playerResults)
+        val factions = groupByFaction(playerResults)
+            .map { (faction, results) ->
+                val victories = results.count { it.won }
+                val score = results.sumOf { it.score }
+                PlayerFactionStatsDTO(
+                    faction = faction,
+                    totalGames = results.size,
+                    totalVictories = victories,
+                    winPercentage = (victories.toDouble() / results.size) * 100,
+                    totalScore = score,
+                    averageScore = score.toDouble() / results.size
+                )
+            }
+            .sortedWith(
+                compareByDescending<PlayerFactionStatsDTO> { it.winPercentage }
+                    .thenByDescending { it.totalVictories }
+                    .thenByDescending { it.totalGames }
+                    .thenBy { it.faction }
+            )
+
+        return PlayerRankingDetailDTO(
+            playerId = ranking.playerId,
+            playerName = ranking.playerName,
+            totalVictories = ranking.totalVictories,
+            totalGames = ranking.totalGames,
+            winPercentage = ranking.winPercentage,
+            differentFactions = ranking.differentFactions,
+            totalScore = ranking.totalScore,
+            factions = factions
+        )
     }
 
     /**
@@ -59,7 +95,7 @@ class RankingService(
         } else {
             0.0
         }
-        val differentFactions = playerResults.map { it.faction }.distinct().size
+        val differentFactions = groupByFaction(playerResults).size
         val totalScore = playerResults.sumOf { it.score }
 
         return PlayerRankingDTO(
