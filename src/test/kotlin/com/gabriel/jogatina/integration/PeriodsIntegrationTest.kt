@@ -90,6 +90,16 @@ class PeriodsIntegrationTest {
     }
 
     @Test
+    fun `given no saved periods when listing them then responds 200 with an empty list`() {
+        client.get().uri("/api/periods").exchange()
+            .expectStatus().isOk
+            .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$").isArray
+            .jsonPath("$.length()").isEqualTo(0)
+    }
+
+    @Test
     fun `given saved periods when listing them then returns newest first`() {
         criarId("""{"name":"Antiga","from":"2025-01-01T03:00:00Z","to":"2025-06-01T03:00:00Z"}""")
         criarId("""{"name":"Atual","from":"2026-09-01T03:00:00Z"}""")
