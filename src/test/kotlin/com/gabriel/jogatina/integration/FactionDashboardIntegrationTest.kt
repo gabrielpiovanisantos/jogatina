@@ -78,21 +78,21 @@ class FactionDashboardIntegrationTest {
 
         partida(
             "2026-09-01T20:00:00Z",
-            Resultado(ana, "Marquise de Cat", 30, true),
-            Resultado(bruno, "Vagabond", 20, false),
-            Resultado(carla, "Eyrie Dynasties", 10, false)
+            Resultado(ana, "Marqueses", 30, true),
+            Resultado(bruno, "Malandro", 20, false),
+            Resultado(carla, "Dinastia das Rapinas", 10, false)
         )
         partida(
             "2026-09-08T20:00:00Z",
-            Resultado(ana, "Vagabond", 25, true),
-            Resultado(bruno, "marquise de cat", 22, false),
-            Resultado(carla, "Eyrie Dynasties", 18, false)
+            Resultado(ana, "Malandro", 25, true),
+            Resultado(bruno, "marqueses", 22, false),
+            Resultado(carla, "Dinastia das Rapinas", 18, false)
         )
         partida(
             "2026-09-15T20:00:00Z",
-            Resultado(ana, "Eyrie Dynasties", 15, false),
-            Resultado(bruno, " Marquise de Cat ", 28, true),
-            Resultado(carla, "Vagabond", 12, false)
+            Resultado(ana, "Dinastia das Rapinas", 15, false),
+            Resultado(bruno, " Marqueses ", 28, true),
+            Resultado(carla, "Malandro", 12, false)
         )
         return jogadores
     }
@@ -101,14 +101,14 @@ class FactionDashboardIntegrationTest {
     fun `given games with several factions when listing factions then groups ignoring case and orders by win percentage`() {
         cenario()
 
-        // Marquise: 3 partidas, 2 vitórias (66,7%). Vagabond: 3 partidas, 1 vitória (33,3%).
-        // Eyrie: 3 partidas, 0 vitórias.
+        // Marqueses: 3 partidas, 2 vitórias (66,7%). Malandro: 3 partidas, 1 vitória (33,3%).
+        // Dinastia das Rapinas: 3 partidas, 0 vitórias.
         client.get().uri("/dashboard/factions").exchange()
             .expectStatus().isOk
             .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
             .expectBody()
             .jsonPath("$.length()").isEqualTo(3)
-            .jsonPath("$[*].faction").isEqualTo(listOf("Marquise de Cat", "Vagabond", "Eyrie Dynasties"))
+            .jsonPath("$[*].faction").isEqualTo(listOf("Marqueses", "Malandro", "Dinastia das Rapinas"))
             .jsonPath("$[0].totalGames").isEqualTo(3)
             .jsonPath("$[0].totalVictories").isEqualTo(2)
             .jsonPath("$[0].winPercentage").isEqualTo((2.0 / 3) * 100)
@@ -132,10 +132,10 @@ class FactionDashboardIntegrationTest {
     fun `given a faction in another case when getting its detail then returns stats and each player's performance`() {
         val jogadores = cenario()
 
-        client.get().uri("/dashboard/factions/{faction}", "MARQUISE DE CAT").exchange()
+        client.get().uri("/dashboard/factions/{faction}", "MARQUESES").exchange()
             .expectStatus().isOk
             .expectBody()
-            .jsonPath("$.faction").isEqualTo("Marquise de Cat")
+            .jsonPath("$.faction").isEqualTo("Marqueses")
             .jsonPath("$.totalGames").isEqualTo(3)
             .jsonPath("$.totalVictories").isEqualTo(2)
             .jsonPath("$.totalScore").isEqualTo(80)
@@ -156,10 +156,22 @@ class FactionDashboardIntegrationTest {
     }
 
     @Test
+    fun `given an accented faction when getting its detail in lower case then finds it`() {
+        val ana = playerRepository.save(Player(name = "Ana"))
+        partida("2026-09-01T20:00:00Z", Resultado(ana, "Conspiração Corvídea", 20, true))
+
+        client.get().uri("/dashboard/factions/{faction}", "conspiração corvídea").exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$.faction").isEqualTo("Conspiração Corvídea")
+            .jsonPath("$.players[0].playerName").isEqualTo("Ana")
+    }
+
+    @Test
     fun `given an unknown faction when getting its detail then responds 404`() {
         cenario()
 
-        client.get().uri("/dashboard/factions/{faction}", "Lizard Cult").exchange()
+        client.get().uri("/dashboard/factions/{faction}", "Lagartos Cultistas").exchange()
             .expectStatus().isNotFound
             .expectBody().isEmpty
     }

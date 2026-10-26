@@ -85,22 +85,22 @@ class FrontendContractIntegrationTest {
 
         partida(
             "2026-09-01T20:00:00Z",
-            Resultado("Ana", "Marquise de Cat", 30, true),
-            Resultado("Bruno", "Eyrie Dynasties", 22, false),
-            Resultado("Carla", "Woodland Alliance", 18, false)
+            Resultado("Ana", "Marqueses", 30, true),
+            Resultado("Bruno", "Dinastia das Rapinas", 22, false),
+            Resultado("Carla", "Aliança da Floresta", 18, false)
         )
         partida(
             "2026-09-08T20:00:00Z",
-            Resultado("Ana", "Eyrie Dynasties", 25, false),
-            Resultado("Bruno", "Vagabond", 30, true),
-            Resultado("Carla", "Marquise de Cat", 20, false),
-            Resultado("Diego", "Lizard Cult", 10, false)
+            Resultado("Ana", "Dinastia das Rapinas", 25, false),
+            Resultado("Bruno", "Malandro", 30, true),
+            Resultado("Carla", "Marqueses", 20, false),
+            Resultado("Diego", "Lagartos Cultistas", 10, false)
         )
         partida(
             "2026-09-15T20:00:00Z",
-            Resultado("Ana", "Vagabond", 28, true),
-            Resultado("Carla", "Riverfolk Company", 15, false),
-            Resultado("Diego", "Lizard Cult", 12, false)
+            Resultado("Ana", "Malandro", 28, true),
+            Resultado("Carla", "Companhia Ribeirinha", 15, false),
+            Resultado("Diego", "Lagartos Cultistas", 12, false)
         )
 
         return jogadores.mapValues { it.value.id!! }
@@ -197,8 +197,8 @@ class FrontendContractIntegrationTest {
 
             finalizar(
                 """{"dateTime":"2026-10-01T20:00:00.000Z","results":[
-                    ${resultado(ana, "Marquise de Cat", 30, true)},
-                    ${resultado(bruno, "Vagabond", 20, false)}
+                    ${resultado(ana, "Marqueses", 30, true)},
+                    ${resultado(bruno, "Malandro", 20, false)}
                 ]}"""
             )
                 .expectStatus().isCreated
@@ -220,8 +220,8 @@ class FrontendContractIntegrationTest {
 
             finalizar(
                 """{"dateTime":"2026-10-01T20:00:00Z","results":[
-                    ${resultado(ana, "Vagabond", 30, true)},
-                    ${resultado(999, "Lizard Cult", 10, false)}
+                    ${resultado(ana, "Malandro", 30, true)},
+                    ${resultado(999, "Lagartos Cultistas", 10, false)}
                 ]}"""
             )
                 .expectStatus().isBadRequest
@@ -236,8 +236,8 @@ class FrontendContractIntegrationTest {
 
             finalizar(
                 """{"dateTime":"2026-10-01T20:00:00Z","results":[
-                    ${resultado(ana, "Vagabond", 30, true)},
-                    ${resultado(ana, "Lizard Cult", 10, false)}
+                    ${resultado(ana, "Malandro", 30, true)},
+                    ${resultado(ana, "Lagartos Cultistas", 10, false)}
                 ]}"""
             )
                 .expectStatus().isBadRequest
@@ -255,7 +255,7 @@ class FrontendContractIntegrationTest {
         fun `given a negative score when finishing a game then responds 400`() {
             val ana = playerRepository.save(Player(name = "Ana")).id!!
 
-            finalizar("""{"dateTime":"2026-10-01T20:00:00Z","results":[${resultado(ana, "Vagabond", -1, true)}]}""")
+            finalizar("""{"dateTime":"2026-10-01T20:00:00Z","results":[${resultado(ana, "Malandro", -1, true)}]}""")
                 .expectStatus().isBadRequest
                 .expectBody(String::class.java).isEqualTo("Pontuação não pode ser negativa")
         }
