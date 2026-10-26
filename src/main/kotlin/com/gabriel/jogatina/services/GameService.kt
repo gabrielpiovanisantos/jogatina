@@ -26,6 +26,8 @@ class GameService(
     fun finish(dateTime: Instant, results: List<FinishGameResultDTO>): Game {
         require(results.isNotEmpty()) { "A partida precisa ter pelo menos um resultado" }
         require(results.all { it.faction.isNotBlank() }) { "Facção não pode ser vazia" }
+        val invalid = results.map { it.faction.trim() }.filter { Factions.official(it) == null }.distinctBy { normalizeFaction(it) }
+        require(invalid.isEmpty()) { "Facção inválida: ${invalid.joinToString()}" }
         require(results.all { it.points >= 0 }) { "Pontuação não pode ser negativa" }
 
         val playerIds = results.map { it.playerId }
@@ -42,7 +44,7 @@ class GameService(
                     game = game,
                     player = players.getValue(it.playerId),
                     score = it.points,
-                    faction = it.faction,
+                    faction = Factions.official(it.faction)!!,
                     won = it.won
                 )
             )
